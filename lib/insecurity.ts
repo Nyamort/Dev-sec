@@ -52,6 +52,17 @@ export const cutOffPoisonNullByte = (str: string) => {
 }
 
 export const isAuthorized = () => expressJwt(({ secret: publicKey }) as any)
+// add isAuthorized with role check
+export const checkRole = (role: string) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const decodedToken = verify(utils.jwtFrom(req)) && decode(utils.jwtFrom(req))
+        if (decodedToken?.data?.role === role) {
+        next()
+        } else {
+        res.status(403).json({ error: 'Malicious activity detected' })
+        }
+    }
+}
 export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
 export const authorize = (user = {}) => jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256' })
 export const verify = (token: string) => token ? (jws.verify as ((token: string, secret: string) => boolean))(token, publicKey) : false
